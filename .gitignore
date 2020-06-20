@@ -4,3 +4,4 @@ events
 *.sublime-workspace
 .DS_Store
 bin/*
+lib/*

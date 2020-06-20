@@ -9,19 +9,7 @@ int main(int argc, char** argv) {
 
   // user comments
   std::ostringstream oss;
-  oss << "# user_values: [SoftDrop(zcut=0.1, beta=0).mass, SoftDrop(zcut=0.1, beta=1).mass,\n"
-      << "#               SafeDrop(zcut=0.1, f=0.0).mass, SafeDrop(zcut=0.1, f=0.25).mass,\n"
-      << "#               SafeDrop(zcut=0.1, f=0.5).mass, SafeDrop(zcut=0.1, f=0.75).mass,\n"
-      << "#               SafeDrop(zcut=0.1, f=1.0).mass, SafeDrop(zcut=0.2, f=0.0).mass,\n"
-      << "#               SafeDrop(zcut=0.2, f=0.25).mass, SafeDrop(zcut=0.2, f=0.5).mass,\n"
-      << "#               SafeDrop(zcut=0.2, f=0.75).mass, SafeDrop(zcut=0.2, f=1.0).mass,\n"
-      << "#               SafeDrop(zcut=0.4, f=0.0).mass, SafeDrop(zcut=0.4, f=0.25).mass,\n"
-      << "#               SafeDrop(zcut=0.4, f=0.5).mass, SafeDrop(zcut=0.4, f=0.75).mass,\n"
-      << "#               SafeDrop(zcut=0.4, f=1.0).mass,\n"
-      << "#               IVGCR(Area, 0.1).(mass, emd), IVGCR(Area, 0.2).(mass, emd),\n"
-      << "#               IVGCR(Area, 0.3).(mass, emd), IVGCR(Area, 0.4).(mass, emd),\n"
-      << "#               IVGCR(EMD, 0.1).(mass, emd), IVGCR(EMD, 0.2).(mass, emd),\n"
-      << "#               IVGCR(EMD, 0.2).(mass, emd), IVGCR(EMD, 0.3).(mass, emd)]\n";
+  oss << "# user_values: [Constituent Multiplicity, Photon Multiplicity]\n";
 
   mc::EventGenerator evgen(argc, argv, oss.str());
   if (evgen.exit) return 1;
@@ -53,10 +41,10 @@ int main(int argc, char** argv) {
         std::vector<fastjet::PseudoJet> hadron_consts(hadron_jet.constituents());
         std::vector<double> hadron_features{double(hadron_consts.size()), 0};
 
-        // count number of pions in the jet (just as an example)
+        // count number of photons in the jet (just as an example)
         // (the user index indexes into the pid vector)
         for (const fastjet::PseudoJet & pj : hadron_consts) {
-          if (abs(evgen.hadron_pids[pj.user_index()]) == 211)
+          if (abs(evgen.hadron_pids[pj.user_index()]) == 22)
             hadron_features.back() += 1;
         }
         
@@ -75,10 +63,10 @@ int main(int argc, char** argv) {
         std::vector<fastjet::PseudoJet> parton_consts(parton_jet.constituents());
         std::vector<double> parton_features{double(parton_consts.size()), 0};
 
-        // count number of pions in the jet (just as an example)
+        // count number of photons in the jet (just as an example)
         // (the user index indexes into the pid vector)
         for (const fastjet::PseudoJet & pj : parton_consts) {
-          if (abs(evgen.parton_pids[pj.user_index()]) == 211)
+          if (abs(evgen.parton_pids[pj.user_index()]) == 22)
             parton_features.back() += 1;
         }
         
