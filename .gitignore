@@ -5,3 +5,5 @@ events
 .DS_Store
 bin/*
 lib/*
+**/__pycache__
+Icon?
