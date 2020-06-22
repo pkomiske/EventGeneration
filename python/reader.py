@@ -256,7 +256,8 @@ def read(filepath, num=-1, max_files=None, verbose=1,
 
         # print update
         if verbose >= 1:
-            print('{:.3f}s - Read {} units from file {}\n'.format(time.time() - start, fcount, filepath))
+            s = '\n' if verbose >= 2 else ''
+            print('{:.3f}s - Read {} units from file {}{}'.format(time.time() - start, fcount, filepath, s))
 
         # break out of loop over files
         if ntot == num:
@@ -272,21 +273,21 @@ def read(filepath, num=-1, max_files=None, verbose=1,
          'durations': np.asarray(durations, dtype=float)}
 
     if store_hadrons:
-        d['origs_h'] = np.asarray(origs_h)
-        d['decays_h'] = np.asarray(decays_h)
-        d['jets_h'] = np.asarray(jets_h)
-        d['hadrons'] = np.asarray(hadrons)
+        d['origs_h'] = np.asarray(origs_h, dtype=object)
+        d['decays_h'] = np.asarray(decays_h, dtype=object)
+        d['jets_h'] = np.asarray(jets_h, dtype=object)
+        d['hadrons'] = np.asarray(hadrons, dtype=object)
         if store_all:
-            d['Cmasks_h'] = np.asarray(Cmasks_h)
-            d['Rmasks_h'] = np.asarray(Rmasks_h)
+            d['Cmasks_h'] = np.asarray(Cmasks_h, dtype=object)
+            d['Rmasks_h'] = np.asarray(Rmasks_h, dtype=object)
 
     if store_partons:
-        d['origs_p'] = np.asarray(origs_p)
-        d['decays_p'] = np.asarray(decays_p)
-        d['jets_p'] = np.asarray(jets_p)
-        d['partons'] = np.asarray(partons)
+        d['origs_p'] = np.asarray(origs_p, dtype=object)
+        d['decays_p'] = np.asarray(decays_p, dtype=object)
+        d['jets_p'] = np.asarray(jets_p, dtype=object)
+        d['partons'] = np.asarray(partons, dtype=object)
         if store_all:
-            d['Cmasks_p'] = np.asarray(Cmasks_p)
-            d['Rmasks_p'] = np.asarray(Rmasks_p)
+            d['Cmasks_p'] = np.asarray(Cmasks_p, dtype=object)
+            d['Rmasks_p'] = np.asarray(Rmasks_p, dtype=object)
 
     return d

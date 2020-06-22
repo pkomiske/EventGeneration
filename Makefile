@@ -9,8 +9,8 @@ FASTJETINC = $(shell fastjet-config --cxxflags)
 PYTHIA8INC = $(shell pythia8-config --cxxflags)
 INCLUDE   += $(FASTJETINC) $(PYTHIA8INC) -Iinclude
 
-# ensure bin and lib directories exists
-$(shell mkdir -p bin lib)
+# ensure lib directory exists
+$(shell mkdir -p lib)
 
 .PHONY: all
 all: libEventGenerator.a
@@ -31,5 +31,5 @@ examples:
 
 .PHONY: clean
 clean:
-	rm -fv bin/* lib/* src/*.o
+	rm -fv lib/* src/*.o
 	make -C examples clean
