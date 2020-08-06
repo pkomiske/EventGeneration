@@ -179,6 +179,12 @@ void EventGenerator::parse(int argc, char** argv) {
 // method to advance event generator, returns how many units were obtained
 uint EventGenerator::next() {
 
+  // clear these vector explicitly
+  parton_hard_inds_.clear();
+  hadron_hard_inds_.clear();
+  hadron_parton_inds_.clear();
+  parton_hadron_inds_.clear();
+
   // iterate until we get an event with some jets
   while (true) {
 
