@@ -1,35 +1,26 @@
-CXX = g++
-ifeq ($(shell uname), Darwin)
-  CXX = clang++
-endif
-
-CXXFLAGS = -O3 -Wall -std=c++14 -g
-
-FASTJETINC = $(shell fastjet-config --cxxflags)
-PYTHIA8INC = $(shell pythia8-config --cxxflags)
-INCLUDE   += $(FASTJETINC) $(PYTHIA8INC) -Iinclude
+PREFIX = /usr/local
+NAME = EventGenerator
 
 # ensure lib directory exists
 $(shell mkdir -p lib)
 
-.PHONY: all
-all: libEventGenerator.a
+.PHONY: all examples clean install
+
+all: lib$(NAME).a
 	make examples
 
-libEventGenerator.a: src/EventGenerator.o src/JetMatcher.o
-	ar crus lib/$@ $^
+lib$(NAME).a:
+	make -C src
+	ar crus lib/$@ `ls src/*.o`
 
-src/EventGenerator.o: src/EventGenerator.cc include/EventGenerator.hh include/JetMatcher.hh
-	$(CXX) -o $@ $< -c $(INCLUDE) $(CXXFLAGS)
+install: lib$(NAME).a
+	rsync -a lib/lib$(NAME).a $(PREFIX)/lib
+	rsync -a include/*.hh $(PREFIX)/include
 
-src/JetMatcher.o: src/JetMatcher.cc include/JetMatcher.hh
-	$(CXX) -o $@ $< -c $(INCLUDE) $(CXXFLAGS)
-
-.PHONY: examples
 examples:
 	make -C examples
 
-.PHONY: clean
 clean:
-	rm -fv lib/* src/*.o
+	rm -fv lib/*
 	make -C examples clean
+	make -C src clean

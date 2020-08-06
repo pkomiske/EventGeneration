@@ -7,3 +7,4 @@ bin/*
 lib/*
 **/__pycache__
 Icon?
+.deps/

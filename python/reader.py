@@ -5,10 +5,21 @@ import numpy as np
 
 allowed_particle_codes = frozenset(['C', 'R', 'O', 'D'])
 
+M_FULLY_MATCHED = 1;
+M_HADRON_LEVEL  = 2;
+M_PARTON_LEVEL  = 4;
+M_HADRON_JET    = 8;
+M_HADRON_HARD   = 16;
+M_PARTON_JET    = 32;
+M_PARTON_HARD   = 64;
+M_PH_SAME_HARDS = 128;
+M_PARTIAL_MATCH = ~M_FULLY_MATCHED;
+
 #function to read in generated jets
 def read(filepath, num=-1, max_files=None, verbose=1,
-                  store_hadrons=True, store_partons=True, 
-                  which_particles='all'):
+                   store_hadrons=True, store_partons=True, 
+                   which_particles='all',
+                   keep_status=None):
 
     # start timing
     start = time.time()
@@ -43,6 +54,7 @@ def read(filepath, num=-1, max_files=None, verbose=1,
     store_parton_particles = (store_partons and store_any)
 
     # arrays
+    file_comments = []
     statuses, weights = [], []
     origs_h, origs_p = [], []
     decays_h, decays_p = [], []
@@ -68,6 +80,7 @@ def read(filepath, num=-1, max_files=None, verbose=1,
         filepaths = filepath
 
     # iterate over files and count how many total units we have
+    skip = False
     ntot = 0
     for file_i,filepath in enumerate(filepaths):
         with open(filepath, 'r') as f:
@@ -96,6 +109,8 @@ def read(filepath, num=-1, max_files=None, verbose=1,
                     name, val = row[1:].split(':')
                     all_mask_bits[-1][name.strip()] = int(val)
 
+            file_comments.append(''.join(comments))
+
             # iterate over units in file
             fcount = 0
             for row in f:
@@ -103,37 +118,47 @@ def read(filepath, num=-1, max_files=None, verbose=1,
                 parts = row.split()
                 if len(parts) == 0:
 
-                    # check ending condition
-                    if ntot == num:
-                        break
+                    if skip:
+                        skip = False
+                    else:
 
-                    # start a new jet with every newline
-                    if store_hadrons:
-                        if store_origs:
-                            origs_h.append(orig_h)
-                        if store_decays:
-                            decays_h.append(decay_h)
-                        jets_h.append(jet_h)
-                        if store_any:
-                            hadrons.append(np.asarray(hadrons_i, dtype=float))
-                            if store_all:
-                                Cmasks_h.append(np.asarray(Cmask_h, dtype=bool))
-                                Rmasks_h.append(np.asarray(Rmask_h, dtype=bool))
+                        # check ending condition
+                        if ntot == num:
+                            break
+                        ntot += 1
 
-                    if store_partons:
-                        if store_origs:
-                            origs_p.append(orig_p)
-                        if store_decays:
-                            decays_p.append(decay_p)
-                        jets_p.append(jet_p)
-                        if store_any:
-                            partons.append(np.asarray(partons_i, dtype=float))
-                            if store_all:
-                                Cmasks_p.append(np.asarray(Cmask_p, dtype=bool))
-                                Rmasks_p.append(np.asarray(Rmask_p, dtype=bool))
+                        statuses.append(status)
+                        weights.append(weight)
 
-                    ntot += 1
+                        # start a new jet with every newline
+                        if store_hadrons:
+                            if store_origs:
+                                origs_h.append(orig_h)
+                            if store_decays:
+                                decays_h.append(decay_h)
+                            jets_h.append(jet_h)
+                            if store_any:
+                                hadrons.append(np.asarray(hadrons_i, dtype=float))
+                                if store_all:
+                                    Cmasks_h.append(np.asarray(Cmask_h, dtype=bool))
+                                    Rmasks_h.append(np.asarray(Rmask_h, dtype=bool))
+
+                        if store_partons:
+                            if store_origs:
+                                origs_p.append(orig_p)
+                            if store_decays:
+                                decays_p.append(decay_p)
+                            jets_p.append(jet_p)
+                            if store_any:
+                                partons.append(np.asarray(partons_i, dtype=float))
+                                if store_all:
+                                    Cmasks_p.append(np.asarray(Cmask_p, dtype=bool))
+                                    Rmasks_p.append(np.asarray(Rmask_p, dtype=bool))
+
                     fcount += 1
+                    continue
+
+                if skip:
                     continue
 
                 # get the first character of the key that starts the line
@@ -216,12 +241,13 @@ def read(filepath, num=-1, max_files=None, verbose=1,
 
                 # event status
                 if key0 == 'S':
-                    statuses.append(parts[1])
+                    status = int(parts[1])
+                    skip = (keep_status is not None) and ((keep_status & status) != keep_status)
                     continue
 
                 # event weight
                 if key0 == 'W':
-                    weights.append(parts[1])
+                    weight = parts[1]
                     continue
 
                 # unit index, reset event containers
@@ -257,14 +283,15 @@ def read(filepath, num=-1, max_files=None, verbose=1,
         # print update
         if verbose >= 1:
             s = '\n' if verbose >= 2 else ''
-            print('{:.3f}s - Read {} units from file {}{}'.format(time.time() - start, fcount, filepath, s))
+            print('{:>7.3f}s - Read {} units from file {} - {} events kept'.format(time.time() - start, fcount, filepath, ntot), s)
 
         # break out of loop over files
         if ntot == num:
             break
 
     # dictionary to hold all the arrays
-    d = {'mask_bits': all_mask_bits[0],
+    d = {'comments': file_comments,
+         'mask_bits': all_mask_bits[0],
          'statuses': np.asarray(statuses, dtype=int), 
          'weights': np.asarray(weights, dtype=float),
          'sigmas': np.asarray(sigmas, dtype=float),
@@ -273,21 +300,21 @@ def read(filepath, num=-1, max_files=None, verbose=1,
          'durations': np.asarray(durations, dtype=float)}
 
     if store_hadrons:
-        d['origs_h'] = np.asarray(origs_h, dtype=object)
-        d['decays_h'] = np.asarray(decays_h, dtype=object)
-        d['jets_h'] = np.asarray(jets_h, dtype=object)
-        d['hadrons'] = np.asarray(hadrons, dtype=object)
+        d['origs_h'] = np.asarray(origs_h, dtype='O')
+        d['decays_h'] = np.asarray(decays_h, dtype='O')
+        d['jets_h'] = np.asarray(jets_h, dtype='O')
+        d['hadrons'] = np.asarray(hadrons, dtype='O')
         if store_all:
-            d['Cmasks_h'] = np.asarray(Cmasks_h, dtype=object)
-            d['Rmasks_h'] = np.asarray(Rmasks_h, dtype=object)
+            d['Cmasks_h'] = np.asarray(Cmasks_h, dtype='O')
+            d['Rmasks_h'] = np.asarray(Rmasks_h, dtype='O')
 
     if store_partons:
-        d['origs_p'] = np.asarray(origs_p, dtype=object)
-        d['decays_p'] = np.asarray(decays_p, dtype=object)
-        d['jets_p'] = np.asarray(jets_p, dtype=object)
-        d['partons'] = np.asarray(partons, dtype=object)
+        d['origs_p'] = np.asarray(origs_p, dtype='O')
+        d['decays_p'] = np.asarray(decays_p, dtype='O')
+        d['jets_p'] = np.asarray(jets_p, dtype='O')
+        d['partons'] = np.asarray(partons, dtype='O')
         if store_all:
-            d['Cmasks_p'] = np.asarray(Cmasks_p, dtype=object)
-            d['Rmasks_p'] = np.asarray(Rmasks_p, dtype=object)
+            d['Cmasks_p'] = np.asarray(Cmasks_p, dtype='O')
+            d['Rmasks_p'] = np.asarray(Rmasks_p, dtype='O')
 
     return d

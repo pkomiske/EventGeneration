@@ -50,7 +50,7 @@ void EventGenerator::parse(int argc, char** argv) {
   try {
 
     po::variables_map vm;
-    po::options_description od("Options for event generation with Pythia8.");
+    po::options_description od("Options for event generation with Pythia8");
     od.add_options()
 
     // important options (will also be positional)
