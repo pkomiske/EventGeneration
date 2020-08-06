@@ -60,7 +60,7 @@ void EventGenerator::parse(int argc, char** argv) {
                         "Random seed to use.")
     ("process,p",     po::value<std::string>(&process_)->default_value("QCD"),
                         "Name of process to generate: [Zg, Zq, Zjet, QCD, W, Top].")
-    ("ntot,n",        po::value<uint> (&ntot)->default_value(1),
+    ("ntot,n",        po::value<unsigned> (&ntot)->default_value(1),
                         "Number of events to generate.")
 
     // event generation options
@@ -106,17 +106,17 @@ void EventGenerator::parse(int argc, char** argv) {
     // printing/outputting options
     ("print-pythia",              po::bool_switch(&print_pythia_),
                                     "Prints Pythia output.")
-    ("print-every,e",             po::value<uint>(&print_every)->default_value(1000),
+    ("print-every,e",             po::value<unsigned>(&print_every)->default_value(1000),
                                     "Printing frequency.")
-    ("num-print-event",           po::value<uint>(&num_print_event_)->default_value(0),
+    ("num-print-event",           po::value<unsigned>(&num_print_event_)->default_value(0),
                                     "Number of Pythia events to print.")
-    ("num-print-proc",            po::value<uint>(&num_print_proc_)->default_value(0),
+    ("num-print-proc",            po::value<unsigned>(&num_print_proc_)->default_value(0),
                                     "Number of Pythia hard processses to print.")
     ("output-fully-matched-only", po::bool_switch(&fully_matched_only),
                                     "Output only fully matched events.")
     ("output-within-R",           po::bool_switch(&output_within_R_),
                                     "Outputs all partons/hadrons within R of matched object.")
-    ("outprecision", po::value<uint>(&outprecision_)->default_value(12),
+    ("outprecision", po::value<unsigned>(&outprecision_)->default_value(12),
                                     "Number of digits to print for floats.")
 
     // generic options
@@ -139,7 +139,7 @@ void EventGenerator::parse(int argc, char** argv) {
     if (vm.count("help")) {
       exit = true;
       std::cout << "Usage: " << argv_[0];
-      for (uint i = 0; i < pod.max_total_count(); i++)
+      for (unsigned i = 0; i < pod.max_total_count(); i++)
         std::cout << ' ' << pod.name_for_position(i);
       std::cout << "\n\n" << od << '\n';
       return;
@@ -177,7 +177,7 @@ void EventGenerator::parse(int argc, char** argv) {
 }
 
 // method to advance event generator, returns how many units were obtained
-uint EventGenerator::next() {
+unsigned EventGenerator::next() {
 
   // clear these vector explicitly
   parton_hard_inds_.clear();
@@ -246,7 +246,7 @@ uint EventGenerator::next() {
   matched_units.clear();
 
   // iterate over hadron jets
-  for (uint j = 0; j < hadron_jets.size(); j++) {
+  for (unsigned j = 0; j < hadron_jets.size(); j++) {
 
     // setup new matched unit
     matched_units.emplace_back();
@@ -286,7 +286,7 @@ uint EventGenerator::next() {
   }
 
   // iterate over parton jets
-  for (uint j = 0; j < parton_jets.size(); j++) {
+  for (unsigned j = 0; j < parton_jets.size(); j++) {
 
     // check that we didn't already output this along with a hadron jet
     if (parton_hadron_ind(j) != -1) continue;
@@ -316,7 +316,7 @@ uint EventGenerator::next() {
 }
 
 // writes unit to output file
-void EventGenerator::write_unit(uint j) {
+void EventGenerator::write_unit(unsigned j) {
 
   // check for appropriate input and acquire unit
   assert(j < matched_units.size());
@@ -613,7 +613,7 @@ void EventGenerator::describe(std::ostream & os) const {
 inline void EventGenerator::store_hardprocess() {
   origs.clear();
   decays.clear();
-  for (uint i : hardproc_ids_) {
+  for (unsigned i : hardproc_ids_) {
     origs.emplace_back(pythia_.process[i].p());
     origs.back().set_user_index(pythia_.process[i].id());
 
@@ -697,7 +697,7 @@ EventGenerator::write_constituents_and_within_R(const PseudoJet & primary_jet,
     outfile_ << id << 'C';
 
     // indicate that we've looked through this one
-    uint index(pj.user_index());
+    unsigned index(pj.user_index());
     writes[index] = true;
 
     // test for const within R of seconday jet
@@ -723,7 +723,7 @@ inline void EventGenerator::write_within_R(const PseudoJet & jet,
   if (!output_within_R_) return;
 
   for (const PseudoJet & pj : particles) {
-    uint index(pj.user_index());
+    unsigned index(pj.user_index());
     if (!writes[index] && jet.delta_R(pj) <= jet_R) {
       outfile_ << id << "R ";
       write_ptyphipid(pj, ref_phi, pids[index]);

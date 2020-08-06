@@ -53,7 +53,6 @@ const unsigned char M_PH_SAME_HARDS = 128;
 const unsigned char M_PARTIAL_MATCH = ~M_FULLY_MATCHED;
 
 // commonly used types
-typedef unsigned int uint;
 using fastjet::PseudoJet;
 
 // essentially map massless particles masses to zero
@@ -93,7 +92,7 @@ class EventGenerator {
 public:
 
   // event properties
-  uint ntot, nmaxjets;
+  unsigned ntot, nmaxjets;
   bool fully_matched_only, hardprocess, partonlevel, hadronlevel;
 
   // jet properties
@@ -109,7 +108,7 @@ public:
 
   // other options
   bool verbose, exit;
-  uint print_every;
+  unsigned print_every;
   std::string user_comments;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -123,7 +122,7 @@ private:
 
   // counters
   std::chrono::steady_clock::time_point start_time_;
-  uint force_hadron_level_failed_, write_counter_;
+  unsigned force_hadron_level_failed_, write_counter_;
 
   // filepath to output file
   std::string outfilepath_;
@@ -148,10 +147,10 @@ private:
 
   // printing options
   bool print_pythia_;
-  uint num_print_event_, num_print_proc_, outprecision_;
+  unsigned num_print_event_, num_print_proc_, outprecision_;
 
   // setup options
-  std::vector<uint> hardproc_ids_;
+  std::vector<unsigned> hardproc_ids_;
   std::vector<std::string> pythia_commands_;
 
   // Pythia instance
@@ -185,23 +184,23 @@ public:
   void parse(int argc, char** argv);
 
   // method to advance event generator, returns how many units were obtained
-  uint next();
+  unsigned next();
 
   // determines if unit j was fully matched
-  bool unit_fully_matched(uint j) const {
+  bool unit_fully_matched(unsigned j) const {
     assert(j < matched_units.size());
     return matched_units[j].status & M_FULLY_MATCHED;
   }
 
   // accesses the hadron jet in unit j
-  std::pair<PseudoJet,bool> get_hadron_jet(uint j) const {
+  std::pair<PseudoJet,bool> get_hadron_jet(unsigned j) const {
     int hadron_jet_ind(matched_units[j].hadron_jet_ind);
     if (hadron_jet_ind == -1) return std::make_pair(PseudoJet(false), false);
     return std::make_pair(hadron_jets[hadron_jet_ind], true);
   }
 
   // accesses the parton jet in unit j
-  std::pair<PseudoJet,bool> get_parton_jet(uint j) const {
+  std::pair<PseudoJet,bool> get_parton_jet(unsigned j) const {
     int parton_jet_ind(matched_units[j].parton_jet_ind);
     if (parton_jet_ind == -1) return std::make_pair(PseudoJet(false), false);
     return std::make_pair(parton_jets[parton_jet_ind], true);
@@ -216,10 +215,10 @@ public:
   }
 
   // writes specified unit to output file
-  void write_unit(uint j);
+  void write_unit(unsigned j);
 
   // prints update to std::cout
-  void print(uint i) const {
+  void print(unsigned i) const {
     std::ostringstream oss;
     oss << std::setprecision(6)
         << process_ 
@@ -258,16 +257,16 @@ private:
 
   // accesses vectors of matched indices, preserving -1 values
   int hadron_hard_ind(int j) const {
-    return j != -1 && uint(j) < hadron_hard_inds_.size() ? hadron_hard_inds_[j] : -1;
+    return j != -1 && unsigned(j) < hadron_hard_inds_.size() ? hadron_hard_inds_[j] : -1;
   }
   int hadron_parton_ind(int j) const {
-    return j != -1 && uint(j) < hadron_parton_inds_.size() ? hadron_parton_inds_[j] : -1;
+    return j != -1 && unsigned(j) < hadron_parton_inds_.size() ? hadron_parton_inds_[j] : -1;
   }
   int parton_hadron_ind(int j) const {
-    return j != -1 && uint(j) < parton_hadron_inds_.size() ? parton_hadron_inds_[j] : -1;
+    return j != -1 && unsigned(j) < parton_hadron_inds_.size() ? parton_hadron_inds_[j] : -1;
   }
   int parton_hard_ind(int j) const {
-    return j != -1 && uint(j) < parton_hard_inds_.size() ? parton_hard_inds_[j] : -1;
+    return j != -1 && unsigned(j) < parton_hard_inds_.size() ? parton_hard_inds_[j] : -1;
   }
 
   // writes hard process particle to file
